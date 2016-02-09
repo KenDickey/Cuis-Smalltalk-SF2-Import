@@ -10,7 +10,7 @@ To load the package
 
 You will need to unzip the AccuFonts.zip file.  A good place for this would be Cuis-Smalltalk-Dev/AdditionalFonts.
 ````Smalltalk
-	AdditionalFontData/StrikeFonts'.
+	SF2Installer readSF2FontsFromDir: 'AdditionalFontData/StrikeFonts'.
 	(StringMorph 
 		contents: 'Some text in a particular font!' 
 		font: (AbstractFont familyName: 'Accujen' aroundPointSize: 30))
