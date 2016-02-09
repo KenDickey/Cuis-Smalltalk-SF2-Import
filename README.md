@@ -5,12 +5,13 @@ Tested in Cuis 4.2  rev 2679
 
 To load the package
 ````Smalltalk
-	Feature require: #'SF2-Import''.
+	Feature require: #'SF2-Import'.
 ````
 
 You will need to unzip the AccuFonts.zip file.  A good place for this would be Cuis-Smalltalk-Dev/AdditionalFonts.
 ````Smalltalk
-	SF2Installer readSF2FontsFromDir: 'AdditionalFontData/StrikeFonts'.
+	SF2Installer readSF2FontsFromDir: 'AdditionalFontData'.
+
 	(StringMorph 
 		contents: 'Some text in a particular font!' 
 		font: (AbstractFont familyName: 'Accujen' aroundPointSize: 30))
