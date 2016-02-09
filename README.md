@@ -8,10 +8,15 @@ To load the package
 	Feature require: #'SF2-Import'.
 ````
 
-You will need to unzip the AccuFonts.zip file.  A good place for this would be Cuis-Smalltalk-Dev/AdditionalFonts.
+You will need to unzip the AccuFonts.zip file.  
+
+Also available via http://wiki.squeak.org/squeak/uploads/696/AccuFonts.zip
+
+A good place for these fonts would be Cuis-Smalltalk-Dev/AdditionalFonts.
 ````Smalltalk
 	SF2Installer readSF2FontsFromDir: 'AdditionalFontData'.
 
+	"Something to look at"
 	(StringMorph 
 		contents: 'Some text in a particular font!' 
 		font: (AbstractFont familyName: 'Accujen' aroundPointSize: 30))
