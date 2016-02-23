@@ -1,6 +1,6 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2679] on 8 February 2016 at 5:19:07.133511 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2684] on 22 February 2016 at 7:46:12.81876 pm'!
 'Description Code to read and install Squeak .sf2 StrikeFont files'!
-!provides: 'SF2-Import' 1 3!
+!provides: 'SF2-Import' 1 4!
 !classDefinition: #NameOfSubclass category: #'SF2-Import'!
 Object subclass: #NameOfSubclass
 	instanceVariableNames: ''
@@ -55,8 +55,9 @@ readFromStrike2: fileName  "StrikeFont new readFromStrike2: 'Palatino14.sf2'"	"
 	name := fileEntry baseName.	fileEntry readStream: [ :strm |		strm binary.		self readFromStrike2Stream: strm.
 	].! !
 
-!StrikeFont methodsFor: '*sf2-import' stamp: 'KenD 2/7/2016 20:17'!
-readFromStrike2Stream: file 	"Build an instance from the supplied binary stream on data in strike2 format"	type := file nextInt32.  type = 2 ifFalse: [file close. self error: 'not strike2 format'].	minAscii := file nextInt32.	maxAscii := file nextInt32.	maxWidth := file nextInt32.	ascent := file nextInt32.	descent := file nextInt32.	pointSize := file nextInt32.	superscript := ascent - descent // 3.		subscript := descent - ascent // 3.		emphasis := file nextInt32.	xTable := (Array new: maxAscii + 3) atAllPut: 0.	(minAscii + 1 to: maxAscii + 3) do:		[:index | xTable at: index put: file nextInt32].	glyphs := Form new readFrom: file.	"Set up space character"	((xTable at: (Character space  asciiValue + 2))  = 0 or:			[(xTable at: (Character space  asciiValue + 2)) = (xTable at: (Character space  asciiValue + 1))])		ifTrue:	[(Character space  asciiValue + 2) to: xTable size do:					[:index | xTable at: index put: ((xTable at: index) + 4 "DefaultSpace")]].	characterToGlyphMap := nil.! !
+!StrikeFont methodsFor: '*sf2-import' stamp: 'KenD 2/22/2016 19:44'!
+readFromStrike2Stream: file 	"Build an instance from the supplied binary stream on data in strike2 format"	type := file nextInt32.  type = 2 ifFalse: [file close. self error: 'not strike2 format'].	minAscii := file nextInt32.	maxAscii := file nextInt32.	maxWidth := file nextInt32.	ascent := file nextInt32.	descent := file nextInt32.	pointSize := file nextInt32.	superscript := ascent - descent // 3.		subscript := descent - ascent // 3.		emphasis := file nextInt32.
+	emphasis :=  0.	xTable := (Array new: maxAscii + 3) atAllPut: 0.	(minAscii + 1 to: maxAscii + 3) do:		[:index | xTable at: index put: file nextInt32].	glyphs := Form new readFrom: file.	"Set up space character"	((xTable at: (Character space  asciiValue + 2))  = 0 or:			[(xTable at: (Character space  asciiValue + 2)) = (xTable at: (Character space  asciiValue + 1))])		ifTrue:	[(Character space  asciiValue + 2) to: xTable size do:					[:index | xTable at: index put: ((xTable at: index) + 4 "DefaultSpace")]].	characterToGlyphMap := nil.! !
 
 !StrikeFont methodsFor: '*sf2-import' stamp: 'ls 3/27/2000 17:43'!
 writeAsStrike2On: file	"Write me onto a file in strike2 format.	fileName should be of the form: <family name><pointSize>.sf2"	file binary.	file nextInt32Put: 2.	file nextInt32Put: minAscii.	file nextInt32Put: maxAscii.	file nextInt32Put: maxWidth.	file nextInt32Put: ascent.	file nextInt32Put: descent.	file nextInt32Put: pointSize.	superscript := ascent - descent // 3.		subscript := descent - ascent // 3.		file nextInt32Put: emphasis.	(minAscii + 1 to: maxAscii + 3) do:		[:index | file nextInt32Put: (xTable at: index)].	glyphs writeOn: file.	file close.! !
