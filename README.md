@@ -1,7 +1,7 @@
 # SF2-Import
 Import Squeak sf2 format (StrikeFont) files
 ============================
-Tested in Cuis 4.2  rev 2679
+Tested in Cuis 4.2  rev 2684
 
 To load the package
 ````Smalltalk
@@ -22,3 +22,5 @@ A good place for these fonts would be Cuis-Smalltalk-Dev/AdditionalFonts.
 		font: (AbstractFont familyName: 'Accujen' aroundPointSize: 30))
 		 openInHand.
 ````
+
+![Font Sample](AddedStrikeFonts.bmp)
