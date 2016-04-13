@@ -1,6 +1,6 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2684] on 22 February 2016 at 7:46:12.81876 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2734] on 12 April 2016 at 7:19:32.012424 pm'!
 'Description Code to read and install Squeak .sf2 StrikeFont files'!
-!provides: 'SF2-Import' 1 4!
+!provides: 'SF2-Import' 1 5!
 !classDefinition: #NameOfSubclass category: #'SF2-Import'!
 Object subclass: #NameOfSubclass
 	instanceVariableNames: ''
@@ -194,7 +194,17 @@ withoutJustTrailingDigits
 "
 ! !
 
-!SF2Installer class methodsFor: 'read sf2' stamp: 'KenD 2/8/2016 16:49'!
+!PositionableStream methodsFor: '*sf2-import' stamp: 'KenD 4/12/2016 19:15'!
+nextInt32
+	"Read a 32-bit signed integer from the next 4 bytes"
+	| s |
+	s _ 0.
+	1 to: 4 do: [:i | s _ (s bitShift: 8) + self next].
+	(s bitAnd: 16r80000000) = 0
+		ifTrue: [^ s]
+		ifFalse: [^ -1 - s bitInvert32]! !
+
+!SF2Installer class methodsFor: 'read sf2' stamp: 'KenD 4/12/2016 19:18'!
 readSF2FontsFromDir: aString
 	"Add *.sf2 file fonts to AbstractFont availableFonts"
 	| dirEntry strikeFonts |
