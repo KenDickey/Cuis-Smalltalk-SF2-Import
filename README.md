@@ -1,7 +1,7 @@
 # SF2-Import
 Import Squeak sf2 format (StrikeFont) files
 ============================
-Tested in Cuis 4.2  rev 2684
+Tested in Cuis 4.2  rev 2783
 
 To load the package
 ````Smalltalk
