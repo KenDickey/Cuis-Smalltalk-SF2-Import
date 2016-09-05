@@ -1,16 +1,6 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2783] on 1 June 2016 at 4:27:41.144867 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2929] on 5 September 2016 at 3:38:15 pm'!
 'Description Code to read and install Squeak .sf2 StrikeFont files'!
-!provides: 'SF2-Import' 1 6!
-!classDefinition: #NameOfSubclass category: #'SF2-Import'!
-Object subclass: #NameOfSubclass
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'SF2-Import'!
-!classDefinition: 'NameOfSubclass class' category: #'SF2-Import'!
-NameOfSubclass class
-	instanceVariableNames: ''!
-
+!provides: 'SF2-Import' 1 7!
 !classDefinition: #SF2Installer category: #'SF2-Import'!
 Object subclass: #SF2Installer
 	instanceVariableNames: ''
@@ -22,49 +12,10 @@ SF2Installer class
 	instanceVariableNames: ''!
 
 
-!NameOfSubclass commentStamp: '<historical>' prior: 0!
-Code to read and install Squeak .sf2 StrikeFont files!
-
 !SF2Installer commentStamp: '<historical>' prior: 0!
 Code to read and install Squeak .sf2 StrikeFont files
 
 See class side!
-
-!AbstractFont class methodsFor: '*sf2-import' stamp: 'KenD 2/8/2016 13:06'!
-availableFonts
-
-	^AvailableFonts! !
-
-!StrikeFont methodsFor: '*sf2-import' stamp: 'ar 5/23/2000 12:50'!
-buildfontNamed: nm fromForms: forms startingAtAscii: startAscii	ascent: a descent: d maxWid: m	"This builds a StrikeFont instance from existing forms."	| lastAscii width ascii charForm missingForm tempGlyphs |	name := nm.	ascent := 11.	descent := 3.	maxWidth := 16.	pointSize := 8.	name := (name copyWithout: Character space) ,				(pointSize < 10					ifTrue: ['0' , pointSize printString]					ifFalse: [pointSize printString]).	minAscii := 258.	maxAscii := 0.	superscript := ascent - descent // 3.		subscript := descent - ascent // 3.		emphasis := 0.	type := 0.  "ignored for now"	tempGlyphs := Form extent: (maxWidth*257) @ self height.	xTable := (Array new: 258) atAllPut: 0.	xTable at: 1 put: 0.	"Read character forms and blt into tempGlyphs"	lastAscii := -1.	1 to: forms size do:		[:i | charForm := forms at: i. width := charForm width.		ascii := startAscii-1+i.		self displayChar: ascii form: charForm.		ascii = 256			ifTrue: [missingForm := charForm deepCopy]			ifFalse:			[minAscii := minAscii min: ascii.			maxAscii := maxAscii max: ascii.			lastAscii+1 to: ascii-1 do: [:as | xTable at: as+2 put: (xTable at: as+1)].			tempGlyphs copy: ((xTable at: ascii+1)@0									extent: charForm extent)						from: 0@0 in: charForm rule: Form over.			xTable at: ascii+2 put: (xTable at: ascii+1) + width.			lastAscii := ascii]].	lastAscii+1 to: maxAscii+1 do: [:as | xTable at: as+2 put: (xTable at: as+1)].	missingForm == nil ifFalse:		[tempGlyphs copy: missingForm boundingBox from: missingForm				to: (xTable at: maxAscii+2)@0 rule: Form over.		xTable at: maxAscii+3 put: (xTable at: maxAscii+2) + missingForm width].	glyphs := Form extent: (xTable at: maxAscii+3) @ self height.	glyphs copy: glyphs boundingBox from: 0@0 in: tempGlyphs rule: Form over.	xTable := xTable copyFrom: 1 to: maxAscii+3.	characterToGlyphMap := nil.! !
-
-!StrikeFont methodsFor: '*sf2-import'!
-displayChar: ascii form: charForm	"Convenience utility used during conversion of BitFont files"	| m bigForm |	Display fillBlack: (0@0 extent: 20@14).	ascii printString displayAt: 0@2.	charForm width > 0 ifTrue:		[m := 5.		bigForm := charForm magnify: charForm boundingBox by: m@m.		Display border: ((bigForm boundingBox expandBy: m) translateBy: 50@2) width: m.		bigForm displayAt: 50@2.		Display fillBlack: ((50@2)+((m*charForm width)@0) extent: 1@(m*self height))].! !
-
-!StrikeFont methodsFor: '*sf2-import' stamp: 'KenD 2/8/2016 16:39'!
-familyName
-
-	^self name withoutJustTrailingDigits! !
-
-!StrikeFont methodsFor: '*sf2-import' stamp: 'md 11/14/2003 17:25'!
-newFromStrike: fileName	"Build an instance from the strike font file name. The '.strike' extension	is optional."	| strike startName raster16 |	name := fileName copyUpTo: $..	"assumes extension (if any) is '.strike'"	strike := FileStream readOnlyFileNamed: name, '.strike.'.	strike binary.	"strip off direcory name if any"	startName := name size.	[startName > 0 and: [((name at: startName) ~= $>) & ((name at: startName) ~= $])]]		whileTrue: [startName := startName - 1].	name := name copyFrom: startName+1 to: name size.	type			:=		strike nextWord.		"type is ignored now -- simplest												assumed.  Kept here to make												writing and consistency more												straightforward."	minAscii		:=		strike nextWord.	maxAscii		:=		strike nextWord.	maxWidth		:=		strike nextWord.	strikeLength	:=		strike nextWord.	ascent			:=		strike nextWord.	descent			:=		strike nextWord.	"xOffset			:="		strike nextWord. 		raster16			:=		strike nextWord.		superscript		:=		ascent - descent // 3.		subscript		:=		descent - ascent // 3.		emphasis		:=		0.	glyphs			:=	Form extent: (raster16 * 16) @ (self height)  							offset: 0@0.		glyphs bits fromByteStream: strike.	xTable := (Array new: maxAscii + 3) atAllPut: 0.	(minAscii + 1 to: maxAscii + 3) do:		[:index | xTable at: index put: strike nextWord].	"Set up space character"	((xTable at: (Space asciiValue + 2))  = 0 or:			[(xTable at: (Space asciiValue + 2)) = (xTable at: (Space asciiValue + 1))])		ifTrue:	[(Space asciiValue + 2) to: xTable size do:					[:index | xTable at: index put: ((xTable at: index) + DefaultSpace)]].	strike close.	characterToGlyphMap := nil.! !
-
-!StrikeFont methodsFor: '*sf2-import' stamp: 'KenD 6/1/2016 16:25'!
-readFromStrike2: fileName  "StrikeFont new readFromStrike2: 'Palatino14.sf2'"	"Build an instance from the strike font stored in strike2 format.	fileName is of the form: <family name><pointSize>.sf2"	| fileEntry |	('*.sf2' match: fileName) ifFalse: [self halt.  "likely incompatible"].
-	fileEntry := fileName asFileEntry."	name := (fileEntry pathComponents last) copyUpTo: $. . "  "Drop filename extension"
-	name := fileEntry baseName.	fileEntry readStreamDo: [ :strm |		strm binary.		self readFromStrike2Stream: strm.
-	].! !
-
-!StrikeFont methodsFor: '*sf2-import' stamp: 'KenD 2/22/2016 19:44'!
-readFromStrike2Stream: file 	"Build an instance from the supplied binary stream on data in strike2 format"	type := file nextInt32.  type = 2 ifFalse: [file close. self error: 'not strike2 format'].	minAscii := file nextInt32.	maxAscii := file nextInt32.	maxWidth := file nextInt32.	ascent := file nextInt32.	descent := file nextInt32.	pointSize := file nextInt32.	superscript := ascent - descent // 3.		subscript := descent - ascent // 3.		emphasis := file nextInt32.
-	emphasis :=  0.	xTable := (Array new: maxAscii + 3) atAllPut: 0.	(minAscii + 1 to: maxAscii + 3) do:		[:index | xTable at: index put: file nextInt32].	glyphs := Form new readFrom: file.	"Set up space character"	((xTable at: (Character space  asciiValue + 2))  = 0 or:			[(xTable at: (Character space  asciiValue + 2)) = (xTable at: (Character space  asciiValue + 1))])		ifTrue:	[(Character space  asciiValue + 2) to: xTable size do:					[:index | xTable at: index put: ((xTable at: index) + 4 "DefaultSpace")]].	characterToGlyphMap := nil.! !
-
-!StrikeFont methodsFor: '*sf2-import' stamp: 'ls 3/27/2000 17:43'!
-writeAsStrike2On: file	"Write me onto a file in strike2 format.	fileName should be of the form: <family name><pointSize>.sf2"	file binary.	file nextInt32Put: 2.	file nextInt32Put: minAscii.	file nextInt32Put: maxAscii.	file nextInt32Put: maxWidth.	file nextInt32Put: ascent.	file nextInt32Put: descent.	file nextInt32Put: pointSize.	superscript := ascent - descent // 3.		subscript := descent - ascent // 3.		file nextInt32Put: emphasis.	(minAscii + 1 to: maxAscii + 3) do:		[:index | file nextInt32Put: (xTable at: index)].	glyphs writeOn: file.	file close.! !
-
-!StrikeFont methodsFor: '*sf2-import' stamp: 'KenD 2/8/2016 13:31'!
-writeAsStrike2named: fileName	"Write me onto a file in strike2 format.	fileName should be of the form: <family name> <pointSize>.sf2"
-		fileName asFileEntry writeStream: [ :file | self writeAsStrike2On: file ]! !
 
 !Bitmap methodsFor: '*sf2-import' stamp: 'KenD 2/8/2016 08:05'!
 decompress: bm fromByteArray: ba at: index
@@ -203,6 +154,42 @@ nextInt32
 	(s bitAnd: 16r80000000) = 0
 		ifTrue: [^ s]
 		ifFalse: [^ -1 - s bitInvert32]! !
+
+!AbstractFont class methodsFor: '*sf2-import' stamp: 'KenD 2/8/2016 13:06'!
+availableFonts
+
+	^AvailableFonts! !
+
+!StrikeFont methodsFor: '*sf2-import' stamp: 'ar 5/23/2000 12:50'!
+buildfontNamed: nm fromForms: forms startingAtAscii: startAscii	ascent: a descent: d maxWid: m	"This builds a StrikeFont instance from existing forms."	| lastAscii width ascii charForm missingForm tempGlyphs |	name := nm.	ascent := 11.	descent := 3.	maxWidth := 16.	pointSize := 8.	name := (name copyWithout: Character space) ,				(pointSize < 10					ifTrue: ['0' , pointSize printString]					ifFalse: [pointSize printString]).	minAscii := 258.	maxAscii := 0.	superscript := ascent - descent // 3.		subscript := descent - ascent // 3.		emphasis := 0.	type := 0.  "ignored for now"	tempGlyphs := Form extent: (maxWidth*257) @ self height.	xTable := (Array new: 258) atAllPut: 0.	xTable at: 1 put: 0.	"Read character forms and blt into tempGlyphs"	lastAscii := -1.	1 to: forms size do:		[:i | charForm := forms at: i. width := charForm width.		ascii := startAscii-1+i.		self displayChar: ascii form: charForm.		ascii = 256			ifTrue: [missingForm := charForm deepCopy]			ifFalse:			[minAscii := minAscii min: ascii.			maxAscii := maxAscii max: ascii.			lastAscii+1 to: ascii-1 do: [:as | xTable at: as+2 put: (xTable at: as+1)].			tempGlyphs copy: ((xTable at: ascii+1)@0									extent: charForm extent)						from: 0@0 in: charForm rule: Form over.			xTable at: ascii+2 put: (xTable at: ascii+1) + width.			lastAscii := ascii]].	lastAscii+1 to: maxAscii+1 do: [:as | xTable at: as+2 put: (xTable at: as+1)].	missingForm == nil ifFalse:		[tempGlyphs copy: missingForm boundingBox from: missingForm				to: (xTable at: maxAscii+2)@0 rule: Form over.		xTable at: maxAscii+3 put: (xTable at: maxAscii+2) + missingForm width].	glyphs := Form extent: (xTable at: maxAscii+3) @ self height.	glyphs copy: glyphs boundingBox from: 0@0 in: tempGlyphs rule: Form over.	xTable := xTable copyFrom: 1 to: maxAscii+3.	characterToGlyphMap := nil.! !
+
+!StrikeFont methodsFor: '*sf2-import'!
+displayChar: ascii form: charForm	"Convenience utility used during conversion of BitFont files"	| m bigForm |	Display fillBlack: (0@0 extent: 20@14).	ascii printString displayAt: 0@2.	charForm width > 0 ifTrue:		[m := 5.		bigForm := charForm magnify: charForm boundingBox by: m@m.		Display border: ((bigForm boundingBox expandBy: m) translateBy: 50@2) width: m.		bigForm displayAt: 50@2.		Display fillBlack: ((50@2)+((m*charForm width)@0) extent: 1@(m*self height))].! !
+
+!StrikeFont methodsFor: '*sf2-import' stamp: 'KenD 2/8/2016 16:39'!
+familyName
+
+	^self name withoutJustTrailingDigits! !
+
+!StrikeFont methodsFor: '*sf2-import' stamp: 'md 11/14/2003 17:25'!
+newFromStrike: fileName	"Build an instance from the strike font file name. The '.strike' extension	is optional."	| strike startName raster16 |	name := fileName copyUpTo: $..	"assumes extension (if any) is '.strike'"	strike := FileStream readOnlyFileNamed: name, '.strike.'.	strike binary.	"strip off direcory name if any"	startName := name size.	[startName > 0 and: [((name at: startName) ~= $>) & ((name at: startName) ~= $])]]		whileTrue: [startName := startName - 1].	name := name copyFrom: startName+1 to: name size.	type			:=		strike nextWord.		"type is ignored now -- simplest												assumed.  Kept here to make												writing and consistency more												straightforward."	minAscii		:=		strike nextWord.	maxAscii		:=		strike nextWord.	maxWidth		:=		strike nextWord.	strikeLength	:=		strike nextWord.	ascent			:=		strike nextWord.	descent			:=		strike nextWord.	"xOffset			:="		strike nextWord. 		raster16			:=		strike nextWord.		superscript		:=		ascent - descent // 3.		subscript		:=		descent - ascent // 3.		emphasis		:=		0.	glyphs			:=	Form extent: (raster16 * 16) @ (self height)  							offset: 0@0.		glyphs bits fromByteStream: strike.	xTable := (Array new: maxAscii + 3) atAllPut: 0.	(minAscii + 1 to: maxAscii + 3) do:		[:index | xTable at: index put: strike nextWord].	"Set up space character"	((xTable at: (Space asciiValue + 2))  = 0 or:			[(xTable at: (Space asciiValue + 2)) = (xTable at: (Space asciiValue + 1))])		ifTrue:	[(Space asciiValue + 2) to: xTable size do:					[:index | xTable at: index put: ((xTable at: index) + DefaultSpace)]].	strike close.	characterToGlyphMap := nil.! !
+
+!StrikeFont methodsFor: '*sf2-import' stamp: 'KenD 6/1/2016 16:25'!
+readFromStrike2: fileName  "StrikeFont new readFromStrike2: 'Palatino14.sf2'"	"Build an instance from the strike font stored in strike2 format.	fileName is of the form: <family name><pointSize>.sf2"	| fileEntry |	('*.sf2' match: fileName) ifFalse: [self halt.  "likely incompatible"].
+	fileEntry := fileName asFileEntry."	name := (fileEntry pathComponents last) copyUpTo: $. . "  "Drop filename extension"
+	name := fileEntry baseName.	fileEntry readStreamDo: [ :strm |		strm binary.		self readFromStrike2Stream: strm.
+	].! !
+
+!StrikeFont methodsFor: '*sf2-import' stamp: 'KenD 2/22/2016 19:44'!
+readFromStrike2Stream: file 	"Build an instance from the supplied binary stream on data in strike2 format"	type := file nextInt32.  type = 2 ifFalse: [file close. self error: 'not strike2 format'].	minAscii := file nextInt32.	maxAscii := file nextInt32.	maxWidth := file nextInt32.	ascent := file nextInt32.	descent := file nextInt32.	pointSize := file nextInt32.	superscript := ascent - descent // 3.		subscript := descent - ascent // 3.		emphasis := file nextInt32.
+	emphasis :=  0.	xTable := (Array new: maxAscii + 3) atAllPut: 0.	(minAscii + 1 to: maxAscii + 3) do:		[:index | xTable at: index put: file nextInt32].	glyphs := Form new readFrom: file.	"Set up space character"	((xTable at: (Character space  asciiValue + 2))  = 0 or:			[(xTable at: (Character space  asciiValue + 2)) = (xTable at: (Character space  asciiValue + 1))])		ifTrue:	[(Character space  asciiValue + 2) to: xTable size do:					[:index | xTable at: index put: ((xTable at: index) + 4 "DefaultSpace")]].	characterToGlyphMap := nil.! !
+
+!StrikeFont methodsFor: '*sf2-import' stamp: 'ls 3/27/2000 17:43'!
+writeAsStrike2On: file	"Write me onto a file in strike2 format.	fileName should be of the form: <family name><pointSize>.sf2"	file binary.	file nextInt32Put: 2.	file nextInt32Put: minAscii.	file nextInt32Put: maxAscii.	file nextInt32Put: maxWidth.	file nextInt32Put: ascent.	file nextInt32Put: descent.	file nextInt32Put: pointSize.	superscript := ascent - descent // 3.		subscript := descent - ascent // 3.		file nextInt32Put: emphasis.	(minAscii + 1 to: maxAscii + 3) do:		[:index | file nextInt32Put: (xTable at: index)].	glyphs writeOn: file.	file close.! !
+
+!StrikeFont methodsFor: '*sf2-import' stamp: 'KenD 2/8/2016 13:31'!
+writeAsStrike2named: fileName	"Write me onto a file in strike2 format.	fileName should be of the form: <family name> <pointSize>.sf2"
+		fileName asFileEntry writeStream: [ :file | self writeAsStrike2On: file ]! !
 
 !SF2Installer class methodsFor: 'read sf2' stamp: 'KenD 4/12/2016 19:18'!
 readSF2FontsFromDir: aString
