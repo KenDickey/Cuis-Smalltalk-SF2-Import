@@ -1,6 +1,6 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2929] on 5 September 2016 at 3:38:15 pm'!
+'From Cuis 4.2 of 25 July 2013 [latest update: #2929] on 7 September 2016 at 3:32:56 pm'!
 'Description Code to read and install Squeak .sf2 StrikeFont files'!
-!provides: 'SF2-Import' 1 7!
+!provides: 'SF2-Import' 1 8!
 !classDefinition: #SF2Installer category: #'SF2-Import'!
 Object subclass: #SF2Installer
 	instanceVariableNames: ''
@@ -230,53 +230,6 @@ displayChar: ascii form: charForm
 familyName
 
 	^self name withoutJustTrailingDigits! !
-
-!StrikeFont methodsFor: '*sf2-import' stamp: 'md 11/14/2003 17:25'!
-newFromStrike: fileName
-	"Build an instance from the strike font file name. The '.strike' extension
-	is optional."
-
-	| strike startName raster16 |
-	name := fileName copyUpTo: $..	"assumes extension (if any) is '.strike'"
-	strike := FileStream readOnlyFileNamed: name, '.strike.'.
-	strike binary.
-
-	"strip off direcory name if any"
-	startName := name size.
-	[startName > 0 and: [((name at: startName) ~= $>) & ((name at: startName) ~= $])]]
-		whileTrue: [startName := startName - 1].
-	name := name copyFrom: startName+1 to: name size.
-
-	type			:=		strike nextWord.		"type is ignored now -- simplest
-												assumed.  Kept here to make
-												writing and consistency more
-												straightforward."
-	minAscii		:=		strike nextWord.
-	maxAscii		:=		strike nextWord.
-	maxWidth		:=		strike nextWord.
-	strikeLength	:=		strike nextWord.
-	ascent			:=		strike nextWord.
-	descent			:=		strike nextWord.
-	"xOffset			:="		strike nextWord. 	
-	raster16			:=		strike nextWord.	
-	superscript		:=		ascent - descent // 3.	
-	subscript		:=		descent - ascent // 3.	
-	emphasis		:=		0.
-	glyphs			:=	Form extent: (raster16 * 16) @ (self height)  
-							offset: 0@0.
-		glyphs bits fromByteStream: strike.
-
-	xTable := (Array new: maxAscii + 3) atAllPut: 0.
-	(minAscii + 1 to: maxAscii + 3) do:
-		[:index | xTable at: index put: strike nextWord].
-
-	"Set up space character"
-	((xTable at: (Space asciiValue + 2))  = 0 or:
-			[(xTable at: (Space asciiValue + 2)) = (xTable at: (Space asciiValue + 1))])
-		ifTrue:	[(Space asciiValue + 2) to: xTable size do:
-					[:index | xTable at: index put: ((xTable at: index) + DefaultSpace)]].
-	strike close.
-	characterToGlyphMap := nil.! !
 
 !StrikeFont methodsFor: '*sf2-import' stamp: 'KenD 6/1/2016 16:25'!
 readFromStrike2: fileName  "StrikeFont new readFromStrike2: 'Palatino14.sf2'"
