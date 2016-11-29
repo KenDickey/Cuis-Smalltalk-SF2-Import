@@ -1,6 +1,6 @@
-'From Cuis 4.2 of 25 July 2013 [latest update: #2929] on 7 September 2016 at 3:32:56 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #2984] on 29 November 2016 at 12:06:51 pm'!
 'Description Code to read and install Squeak .sf2 StrikeFont files'!
-!provides: 'SF2-Import' 1 8!
+!provides: 'SF2-Import' 1 9!
 !classDefinition: #SF2Installer category: #'SF2-Import'!
 Object subclass: #SF2Installer
 	instanceVariableNames: ''
@@ -16,6 +16,23 @@ SF2Installer class
 Code to read and install Squeak .sf2 StrikeFont files
 
 See class side!
+
+!String methodsFor: '*sf2-import' stamp: 'KenD 2/8/2016 16:37'!
+withoutJustTrailingDigits
+	"Answer the portion of the receiver that precedes any trailing series of digits.  If the receiver consists entirely of digits and blanks, return an empty string"
+	| firstDigit |
+	firstDigit := (self findFirst: [:m | m isDigit]).
+	^ firstDigit > 0
+		ifTrue:
+			[(self copyFrom: 1 to: firstDigit-1) withoutTrailingBlanks]
+		ifFalse:
+			[self]
+
+"
+'Wh oopi e234' withoutJustTrailingDigits
+'Wh oopi e 234' withoutJustTrailingDigits
+"
+! !
 
 !Bitmap methodsFor: '*sf2-import' stamp: 'KenD 2/8/2016 08:05'!
 decompress: bm fromByteArray: ba at: index
@@ -128,23 +145,6 @@ newFromStream: s
 		ifFalse: ["Old raw data format"
 				^ s nextWordsInto: (self new: len)]! !
 
-!String methodsFor: '*sf2-import' stamp: 'KenD 2/8/2016 16:37'!
-withoutJustTrailingDigits
-	"Answer the portion of the receiver that precedes any trailing series of digits.  If the receiver consists entirely of digits and blanks, return an empty string"
-	| firstDigit |
-	firstDigit := (self findFirst: [:m | m isDigit]).
-	^ firstDigit > 0
-		ifTrue:
-			[(self copyFrom: 1 to: firstDigit-1) withoutTrailingBlanks]
-		ifFalse:
-			[self]
-
-"
-'Wh oopi e234' withoutJustTrailingDigits
-'Wh oopi e 234' withoutJustTrailingDigits
-"
-! !
-
 !PositionableStream methodsFor: '*sf2-import' stamp: 'KenD 4/12/2016 19:15'!
 nextInt32
 	"Read a 32-bit signed integer from the next 4 bytes"
@@ -231,7 +231,7 @@ familyName
 
 	^self name withoutJustTrailingDigits! !
 
-!StrikeFont methodsFor: '*sf2-import' stamp: 'KenD 6/1/2016 16:25'!
+!StrikeFont methodsFor: '*sf2-import' stamp: 'KenD 11/29/2016 12:03:32'!
 readFromStrike2: fileName  "StrikeFont new readFromStrike2: 'Palatino14.sf2'"
 	"Build an instance from the strike font stored in strike2 format.
 	fileName is of the form: <family name><pointSize>.sf2"
@@ -243,7 +243,8 @@ readFromStrike2: fileName  "StrikeFont new readFromStrike2: 'Palatino14.sf2'"
 	fileEntry readStreamDo: [ :strm |
 		strm binary.
 		self readFromStrike2Stream: strm.
-	].! !
+	].
+	self name: self name, ' ', self pointSize asString.! !
 
 !StrikeFont methodsFor: '*sf2-import' stamp: 'KenD 2/22/2016 19:44'!
 readFromStrike2Stream: file 
