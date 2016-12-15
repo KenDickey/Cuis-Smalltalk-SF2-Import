@@ -12,7 +12,7 @@ You will need to unzip the AccuFonts.zip file.
 
 Also available via http://wiki.squeak.org/squeak/uploads/696/AccuFonts.zip
 
-A good place for these fonts would be Cuis-Smalltalk-Dev/AdditionalFonts.
+A good place for these fonts would be Cuis-Smalltalk-Dev/AdditionalFontData.
 ````Smalltalk
 	SF2Installer readSF2FontsFromDir: 'AdditionalFontData'.
 
