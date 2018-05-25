@@ -1,6 +1,9 @@
-'From Cuis 5.0 of 7 November 2016 [latest update: #2984] on 29 November 2016 at 12:06:51 pm'!
+'From Cuis 5.0 of 7 November 2016 [latest update: #3333] on 25 May 2018 at 3:22:11 pm'!
 'Description Code to read and install Squeak .sf2 StrikeFont files'!
-!provides: 'SF2-Import' 1 9!
+!provides: 'SF2-Import' 1 10!
+SystemOrganization addCategory: #'SF2-Import'!
+
+
 !classDefinition: #SF2Installer category: #'SF2-Import'!
 Object subclass: #SF2Installer
 	instanceVariableNames: ''
@@ -16,6 +19,26 @@ SF2Installer class
 Code to read and install Squeak .sf2 StrikeFont files
 
 See class side!
+
+!SF2Installer class methodsFor: 'read sf2' stamp: 'KenD 5/25/2018 15:20:43'!
+readSF2FontsFromDir: aString
+	"Add *.sf2 file fonts to AbstractFont availableFonts"
+	| dirEntry strikeFonts |
+	dirEntry := aString asDirectoryEntry.
+	strikeFonts := (dirEntry filesMatches: [ :fileEntry | '*.sf2' match: fileEntry pathName]) 
+		collect: [:fileEntry | StrikeFont new readFromStrike2: fileEntry pathName].
+	strikeFonts size isZero 
+		ifTrue: [ PopUpMenu inform: 'No Fonts found in ', aString]
+		ifFalse: [
+			strikeFonts do: [ :font | font reset ].
+			"(strikeFonts asArray sort: [:a :b | a height < b height]) inspect."
+			strikeFonts do: [ :sf | | fontDict |
+				AbstractFont availableFonts at: sf familyName ifAbsentPut: [ Dictionary new ] .
+				fontDict := AbstractFont availableFonts at: sf familyName.
+				fontDict at: sf pointSize put: sf.
+			].
+			PopUpMenu inform: 'Installed ', strikeFonts size asString, ' fonts'
+		].! !
 
 !String methodsFor: '*sf2-import' stamp: 'KenD 2/8/2016 16:37'!
 withoutJustTrailingDigits
@@ -299,18 +322,3 @@ writeAsStrike2named: fileName
 	fileName should be of the form: <family name> <pointSize>.sf2"
 	
 	fileName asFileEntry writeStream: [ :file | self writeAsStrike2On: file ]! !
-
-!SF2Installer class methodsFor: 'read sf2' stamp: 'KenD 4/12/2016 19:18'!
-readSF2FontsFromDir: aString
-	"Add *.sf2 file fonts to AbstractFont availableFonts"
-	| dirEntry strikeFonts |
-	dirEntry := aString asDirectoryEntry.
-	strikeFonts := (dirEntry filesMatches: [ :fileEntry | '*.sf2' match: fileEntry pathName]) 
-		collect: [:fileEntry | StrikeFont new readFromStrike2: fileEntry pathName].
-	strikeFonts do: [ :font | font reset ].
-	"(strikeFonts asArray sort: [:a :b | a height < b height]) inspect."
-	strikeFonts do: [ :sf | | fontDict familyName |
-		AbstractFont availableFonts at: sf familyName ifAbsentPut: [ Dictionary new ] .
-		fontDict := AbstractFont availableFonts at: sf familyName.
-		fontDict at: sf pointSize put: sf.
-	].! !
